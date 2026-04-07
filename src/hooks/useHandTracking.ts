@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { Hands, Results, NormalizedLandmarkList } from '@mediapipe/hands';
-import { Camera } from '@mediapipe/camera_utils';
+import type { Results, NormalizedLandmarkList } from '@mediapipe/hands';
+import * as handsModule from '@mediapipe/hands';
+import * as cameraModule from '@mediapipe/camera_utils';
 
 export type HandMode = 'left' | 'right' | 'both';
 
@@ -84,8 +85,8 @@ export const useHandTracking = (
   const [mode, setMode] = useState<HandMode>('both');
   const [sensitivity, setSensitivity] = useState(1);
   const [landmarks, setLandmarks] = useState<HandLandmarks>({ left: null, right: null });
-  const handsRef = useRef<Hands | null>(null);
-  const cameraRef = useRef<Camera | null>(null);
+  const handsRef = useRef<any>(null);
+  const cameraRef = useRef<any>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastUpdateRef = useRef<number>(0);
   const lastAnglesRef = useRef<Record<number, number>>({});
@@ -158,8 +159,9 @@ export const useHandTracking = (
   const startTracking = useCallback(async (videoElement: HTMLVideoElement) => {
     videoRef.current = videoElement;
 
-    const hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+    const HandsClass = (handsModule as any).Hands || (handsModule as any).default?.Hands;
+    const hands = new HandsClass({
+      locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
     });
 
     hands.setOptions({
@@ -172,7 +174,8 @@ export const useHandTracking = (
     hands.onResults(onResults);
     handsRef.current = hands;
 
-    const camera = new Camera(videoElement, {
+    const CameraClass = (cameraModule as any).Camera || (cameraModule as any).default?.Camera;
+    const camera = new CameraClass(videoElement, {
       onFrame: async () => {
         if (handsRef.current) {
           await handsRef.current.send({ image: videoElement });
