@@ -159,8 +159,9 @@ export const useHandTracking = (
   const startTracking = useCallback(async (videoElement: HTMLVideoElement) => {
     videoRef.current = videoElement;
 
-    const hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+    const HandsClass = (handsModule as any).Hands || (handsModule as any).default?.Hands;
+    const hands = new HandsClass({
+      locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
     });
 
     hands.setOptions({
