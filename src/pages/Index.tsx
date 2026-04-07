@@ -2,6 +2,7 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { useServoControl } from '@/hooks/useServoControl';
 import { usePoseManager } from '@/hooks/usePoseManager';
 import { useSequenceRecorder } from '@/hooks/useSequenceRecorder';
+import { useHandTracking } from '@/hooks/useHandTracking';
 import { arms, getHomePositions, getPickUpPositions } from '@/config/servoConfig';
 import { ConnectionBar } from '@/components/ConnectionBar';
 import { ArmPanel } from '@/components/ArmPanel';
@@ -9,6 +10,8 @@ import { SavedPoses } from '@/components/SavedPoses';
 import { SequenceRecorder } from '@/components/SequenceRecorder';
 import { MovementSettings } from '@/components/MovementSettings';
 import { ArduinoGuide } from '@/components/ArduinoGuide';
+import { HandGestureControl } from '@/components/HandGestureControl';
+import { ParticleArm3D } from '@/components/ParticleArm3D';
 import { Button } from '@/components/ui/button';
 import { Home, Hand } from 'lucide-react';
 
@@ -17,6 +20,7 @@ const Index = () => {
   const servo = useServoControl(ws.sendCommand);
   const poseManager = usePoseManager();
   const sequencer = useSequenceRecorder(servo.positions, servo.moveToPositions);
+  const handTracking = useHandTracking(servo.setSingleServo, servo.movementDelay);
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -46,6 +50,24 @@ const Index = () => {
 
         {/* Movement Settings */}
         <MovementSettings delay={servo.movementDelay} onDelayChange={servo.setMovementDelay} />
+
+        {/* Hand Gesture Control */}
+        <HandGestureControl
+          enabled={handTracking.enabled}
+          mode={handTracking.mode}
+          sensitivity={handTracking.sensitivity}
+          landmarks={handTracking.landmarks}
+          onSetMode={handTracking.setMode}
+          onSetSensitivity={handTracking.setSensitivity}
+          onStart={handTracking.startTracking}
+          onStop={handTracking.stopTracking}
+        />
+
+        {/* 3D Particle Visualization */}
+        <ParticleArm3D
+          positions={servo.positions}
+          landmarks={handTracking.landmarks}
+        />
 
         {/* Arm Panels */}
         <div className="grid gap-4 md:grid-cols-2">
