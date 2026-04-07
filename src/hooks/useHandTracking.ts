@@ -174,7 +174,8 @@ export const useHandTracking = (
     hands.onResults(onResults);
     handsRef.current = hands;
 
-    const camera = new Camera(videoElement, {
+    const CameraClass = (cameraModule as any).Camera || (cameraModule as any).default?.Camera;
+    const camera = new CameraClass(videoElement, {
       onFrame: async () => {
         if (handsRef.current) {
           await handsRef.current.send({ image: videoElement });
