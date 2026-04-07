@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import { Hands, Results, NormalizedLandmarkList } from '@mediapipe/hands';
-import { Camera } from '@mediapipe/camera_utils';
+import type { Results, NormalizedLandmarkList } from '@mediapipe/hands';
+import * as handsModule from '@mediapipe/hands';
+import * as cameraModule from '@mediapipe/camera_utils';
 
 export type HandMode = 'left' | 'right' | 'both';
 
