@@ -63,24 +63,29 @@ const Index = () => {
           onStop={handTracking.stopTracking}
         />
 
-        {/* 3D Particle Visualization */}
-        <ParticleArm3D
-          positions={servo.positions}
-          landmarks={handTracking.landmarks}
-        />
-
-        {/* Arm Panels */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {arms.map(arm => (
-            <ArmPanel
-              key={arm.id}
-              arm={arm}
+        {/* 3D Visualization + Arm Sliders side by side */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* 3D Particle Visualization - sticky on desktop */}
+          <div className="w-full lg:w-1/2 lg:sticky lg:top-4 lg:self-start">
+            <ParticleArm3D
               positions={servo.positions}
-              movingPin={servo.movingPin}
-              onServoChange={servo.setSingleServo}
-              onHomeArm={servo.homeArm}
+              landmarks={handTracking.landmarks}
             />
-          ))}
+          </div>
+
+          {/* Arm Panels */}
+          <div className="w-full lg:w-1/2 space-y-4">
+            {arms.map(arm => (
+              <ArmPanel
+                key={arm.id}
+                arm={arm}
+                positions={servo.positions}
+                movingPin={servo.movingPin}
+                onServoChange={servo.setSingleServo}
+                onHomeArm={servo.homeArm}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Saved Poses */}
