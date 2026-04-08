@@ -1,51 +1,31 @@
 
 
-# Hand Gesture Control with 3D Particle Visualization
+# Fix 3D Particle Arms to Stand Vertically at Home Position
 
-## Overview
-Add a new section to the controller that uses your webcam + MediaPipe Hands to track hand gestures in real-time and map them to servo commands. A React Three Fiber 3D particle system provides a visual representation of both hands and the arm states.
+## Problem
+The current forward kinematics in `armSegmentPoints` produces arms that extend outward/diagonally at home positions (base=90, shoulder=80, elbow=80). Looking at your photo, the arms should stand tall and vertical at their default home pose — base on the table, segments stacking straight up with the claw at the top.
 
-## How It Works
+## Root Cause
+The math maps shoulder and elbow angles using `sin`/`cos` in a way that pushes segments horizontally. At home angles (shoulder=80, elbow=80), the arm should be nearly vertical, but the current formulas treat these as forward-leaning angles.
 
-**Hand Tracking → Servo Mapping:**
-- MediaPipe Hands detects 21 landmarks per hand at ~30fps
-- Left hand controls left arm (pins 0-5), right hand controls right arm (pins 10-15)
-- Toggle modes: left-only, right-only, or both hands
-- Gesture mappings:
-  - **Wrist X position** → Base rotation (pin 10/0)
-  - **Wrist Y position** → Shoulder angle (pin 11/1)
-  - **Elbow angle** (wrist-to-middle-finger vs wrist-to-index) → Elbow servo (pin 12/2)
-  - **Hand rotation/tilt** → Wrist servo (pin 13/3)
-  - **Hand pitch** → Gripper rotate (pin 14/4)
-  - **Pinch distance** (thumb tip to index tip) → Claw open/close (pin 15/5)
+## Fix — `src/components/ParticleArm3D.tsx`
 
-**Sequential movement protection:** Hand tracking updates are throttled — only the servo with the largest change since last command is sent per cycle (respecting the movement delay setting). This ensures one servo moves at a time.
+Rewrite `armSegmentPoints` with correct forward kinematics:
 
-**3D Particle System:**
-- A Three.js canvas shows two robotic arm silhouettes made of glowing particles
-- Particles react to the current servo positions in real-time
-- Hand landmark points are rendered as floating particle clouds
-- Color-coded: blue particles for left arm, orange for right arm
+- **Base** sits at ground level. Base rotation (0–140, home=90) rotates the arm around the Y axis. At home (90), the arm faces forward.
+- **Shoulder** (0–155, home=80): At home ~80, the upper arm should point almost straight up. Map so that 0=tilted back, 155=tilted far forward, and 80≈vertical.
+- **Elbow** (0–150, home=80): At home ~80, the forearm continues upward. Map so that 0=folded forward (down), 150=folded backward, 80≈straight continuation.
+- **Wrist/Claw** segment extends from the forearm tip, also roughly vertical at home.
 
-## New Files
+The key change: each segment's direction is computed relative to the previous segment (cumulative angle), and the home angles map to ~vertical orientation. The segments should represent the actual physical structure: spider-leg base → rotating turret → upper arm → forearm → wrist → claw.
 
-1. **`src/hooks/useHandTracking.ts`** — MediaPipe Hands setup, webcam stream, landmark extraction, gesture-to-angle mapping
-2. **`src/components/HandGestureControl.tsx`** — UI panel with webcam preview, mode toggle (left/right/both), enable/disable button, sensitivity settings
-3. **`src/components/ParticleArm3D.tsx`** — React Three Fiber canvas with particle system rendering both arms and hand landmarks
+Additionally, add small visual details:
+- A wider particle cluster at the base to represent the spider-leg platform
+- A claw representation at the top (two small diverging lines for open/close based on claw servo)
 
-## Dependencies to Add
-- `@mediapipe/hands` + `@mediapipe/camera_utils` — Hand tracking
-- `@react-three/fiber@^8.18` + `three` + `@react-three/drei@^9.122.0` — 3D particle rendering
+## Camera angle
+Adjust the default camera to `[6, 5, 6]` looking at `[0, 3, 0]` so both vertical arms are clearly visible side by side.
 
-## UI Integration
-- New collapsible "Hand Gesture Control" section on the main page between Movement Settings and Arm Panels
-- Toggle button to enable/disable camera
-- Small webcam preview with hand landmark overlay
-- 3D particle canvas (resizable, ~400px tall) showing the arm visualization
-- Mode selector: "Left Hand → Left Arm", "Right Hand → Right Arm", "Both"
-
-## Safety
-- Gesture control respects the existing sequential movement queue — commands are funneled through `setSingleServo` with heavy throttling (~200ms between updates)
-- "Deadzone" threshold so tiny hand tremors don't trigger servo jitter
-- Kill switch button to instantly stop gesture control
+## Files changed
+- `src/components/ParticleArm3D.tsx` — rewrite `armSegmentPoints` with physically accurate vertical FK, add base platform particles, adjust camera
 
