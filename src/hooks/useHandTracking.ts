@@ -1,7 +1,12 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import type { Results, NormalizedLandmarkList } from '@mediapipe/hands';
-import * as handsModule from '@mediapipe/hands';
-import * as cameraModule from '@mediapipe/camera_utils';
+// MediaPipe loaded via CDN scripts (ESM bundling breaks these packages)
+declare global {
+  interface Window {
+    Hands: any;
+    Camera: any;
+  }
+}
 
 export type HandMode = 'left' | 'right' | 'both';
 
@@ -159,7 +164,12 @@ export const useHandTracking = (
   const startTracking = useCallback(async (videoElement: HTMLVideoElement) => {
     videoRef.current = videoElement;
 
-    const HandsClass = (handsModule as any).Hands || (handsModule as any).default?.Hands;
+    const HandsClass = window.Hands;
+    if (!HandsClass) {
+      console.error('MediaPipe Hands not loaded — check CDN script in index.html');
+      return;
+    }
+
     const hands = new HandsClass({
       locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
     });
@@ -174,7 +184,12 @@ export const useHandTracking = (
     hands.onResults(onResults);
     handsRef.current = hands;
 
-    const CameraClass = (cameraModule as any).Camera || (cameraModule as any).default?.Camera;
+    const CameraClass = window.Camera;
+    if (!CameraClass) {
+      console.error('MediaPipe Camera not loaded — check CDN script in index.html');
+      return;
+    }
+
     const camera = new CameraClass(videoElement, {
       onFrame: async () => {
         if (handsRef.current) {
