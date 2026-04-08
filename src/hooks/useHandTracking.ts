@@ -1,7 +1,12 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import type { Results, NormalizedLandmarkList } from '@mediapipe/hands';
-import * as handsModule from '@mediapipe/hands';
-import * as cameraModule from '@mediapipe/camera_utils';
+// MediaPipe loaded via CDN scripts (ESM bundling breaks these packages)
+declare global {
+  interface Window {
+    Hands: any;
+    Camera: any;
+  }
+}
 
 export type HandMode = 'left' | 'right' | 'both';
 
