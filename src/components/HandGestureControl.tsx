@@ -60,7 +60,6 @@ export const HandGestureControl = ({
         ctx.arc(point.x * canvas.width, point.y * canvas.height, 4, 0, Math.PI * 2);
         ctx.fill();
       }
-      // Draw connections
       ctx.strokeStyle = color;
       ctx.lineWidth = 2;
       const connections = [
@@ -93,7 +92,7 @@ export const HandGestureControl = ({
               Hand Gesture Control
               <span className="ml-auto flex items-center gap-2">
                 {enabled && (
-                  <span className="flex items-center gap-1 text-xs font-normal text-green-400">
+                  <span className="flex items-center gap-1 text-xs font-normal text-green-400 animate-breathe">
                     <Zap className="h-3 w-3" /> LIVE
                   </span>
                 )}
@@ -151,7 +150,9 @@ export const HandGestureControl = ({
             </div>
 
             {/* Webcam + overlay */}
-            <div className="relative w-full max-w-sm mx-auto rounded-lg overflow-hidden border border-border/30 bg-black aspect-[4/3]">
+            <div className={`relative w-full max-w-sm mx-auto rounded-lg overflow-hidden border-2 bg-black aspect-[4/3] transition-all duration-500 ${
+              enabled ? 'animate-border-glow border-arm-left' : 'border-border/30'
+            }`}>
               <video
                 ref={videoRef}
                 className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
@@ -173,8 +174,14 @@ export const HandGestureControl = ({
 
             {/* Status */}
             <div className="flex gap-4 text-xs text-muted-foreground">
-              <span>Left hand: {landmarks.left ? '✅ Detected' : '❌ Not detected'}</span>
-              <span>Right hand: {landmarks.right ? '✅ Detected' : '❌ Not detected'}</span>
+              <span className="flex items-center gap-1.5">
+                <span className={`inline-block h-2 w-2 rounded-full ${landmarks.left ? 'bg-arm-left animate-breathe' : 'bg-muted'}`} />
+                Left hand: {landmarks.left ? 'Detected' : 'Not detected'}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className={`inline-block h-2 w-2 rounded-full ${landmarks.right ? 'bg-arm-right animate-breathe' : 'bg-muted'}`} />
+                Right hand: {landmarks.right ? 'Detected' : 'Not detected'}
+              </span>
             </div>
           </CardContent>
         </CollapsibleContent>
