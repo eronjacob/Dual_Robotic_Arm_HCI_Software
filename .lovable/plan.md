@@ -1,31 +1,39 @@
 
 
-# Fix 3D Particle Arms to Stand Vertically at Home Position
+# Visual Effects Enhancement Plan
 
-## Problem
-The current forward kinematics in `armSegmentPoints` produces arms that extend outward/diagonally at home positions (base=90, shoulder=80, elbow=80). Looking at your photo, the arms should stand tall and vertical at their default home pose — base on the table, segments stacking straight up with the claw at the top.
+## Overview
+Add polished visual effects across the 3D visualization, hand gesture control, and servo sliders to make the interface feel more dynamic and professional.
 
-## Root Cause
-The math maps shoulder and elbow angles using `sin`/`cos` in a way that pushes segments horizontally. At home angles (shoulder=80, elbow=80), the arm should be nearly vertical, but the current formulas treat these as forward-leaning angles.
+## Changes
 
-## Fix — `src/components/ParticleArm3D.tsx`
+### 1. 3D Particle Visualization (`ParticleArm3D.tsx`)
+- **Glowing energy lines** between arm segments using `THREE.Line` with gradient opacity — connects the particles visually so the arm reads as a structure, not scattered dots
+- **Pulsing joint orbs** at each joint (base, elbow, wrist) — small spheres that pulse with a glow effect
+- **Floating ambient particles** — 50-80 tiny particles drifting slowly around the scene for atmosphere (like dust motes)
+- **Dynamic particle size** — particles near joints are slightly larger, creating visual weight at articulation points
+- **Subtle auto-rotation** when idle — the scene slowly rotates if the user hasn't interacted with OrbitControls recently
 
-Rewrite `armSegmentPoints` with correct forward kinematics:
+### 2. Servo Sliders (`ServoSlider.tsx` + `slider.tsx`)
+- **Colored slider tracks** — the filled range actually renders in blue (left arm) or orange (right arm) instead of the current broken dynamic class
+- **Glow effect on active slider** — when dragging, the thumb and track get a colored box-shadow/glow
+- **Animated value display** — the degree number uses a subtle scale animation when changing
+- **Moving indicator pulse** — when `isMoving` is true, add a pulsing glow border animation instead of just a color change
 
-- **Base** sits at ground level. Base rotation (0–140, home=90) rotates the arm around the Y axis. At home (90), the arm faces forward.
-- **Shoulder** (0–155, home=80): At home ~80, the upper arm should point almost straight up. Map so that 0=tilted back, 155=tilted far forward, and 80≈vertical.
-- **Elbow** (0–150, home=80): At home ~80, the forearm continues upward. Map so that 0=folded forward (down), 150=folded backward, 80≈straight continuation.
-- **Wrist/Claw** segment extends from the forearm tip, also roughly vertical at home.
+### 3. Hand Gesture Control (`HandGestureControl.tsx`)
+- **Pulsing "LIVE" indicator** — the green LIVE badge gets a breathing pulse animation
+- **Glowing camera border** — when camera is active, the video container gets an animated gradient border (blue/orange)
+- **Hand detection status with animated icons** — replace emoji checkmarks with animated dot indicators
 
-The key change: each segment's direction is computed relative to the previous segment (cumulative angle), and the home angles map to ~vertical orientation. The segments should represent the actual physical structure: spider-leg base → rotating turret → upper arm → forearm → wrist → claw.
+### 4. Global Animations (`tailwind.config.ts` + `index.css`)
+- Add keyframes for `pulse-glow`, `border-glow`, and `breathe` animations
+- Add utility classes for the glow effects
 
-Additionally, add small visual details:
-- A wider particle cluster at the base to represent the spider-leg platform
-- A claw representation at the top (two small diverging lines for open/close based on claw servo)
-
-## Camera angle
-Adjust the default camera to `[6, 5, 6]` looking at `[0, 3, 0]` so both vertical arms are clearly visible side by side.
-
-## Files changed
-- `src/components/ParticleArm3D.tsx` — rewrite `armSegmentPoints` with physically accurate vertical FK, add base platform particles, adjust camera
+## Files to modify
+- `src/components/ParticleArm3D.tsx` — energy lines, joint orbs, ambient particles
+- `src/components/ServoSlider.tsx` — colored tracks, glow effects, pulse animation
+- `src/components/ui/slider.tsx` — support arm-color prop for track coloring
+- `src/components/HandGestureControl.tsx` — animated LIVE badge, glowing border
+- `tailwind.config.ts` — new keyframes and animations
+- `src/index.css` — glow utility classes
 
