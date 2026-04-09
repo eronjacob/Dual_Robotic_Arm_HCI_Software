@@ -54,3 +54,18 @@
     font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
   }
 }
+
+@layer utilities {
+  .glow-left {
+    box-shadow: 0 0 12px 2px hsl(var(--arm-left) / 0.4);
+  }
+  .glow-right {
+    box-shadow: 0 0 12px 2px hsl(var(--arm-right) / 0.4);
+  }
+  .glow-left-strong {
+    box-shadow: 0 0 20px 4px hsl(var(--arm-left) / 0.5);
+  }
+  .glow-right-strong {
+    box-shadow: 0 0 20px 4px hsl(var(--arm-right) / 0.5);
+  }
+}
