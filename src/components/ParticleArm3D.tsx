@@ -24,6 +24,7 @@ function computeArmKeyPoints(
   shoulderAngle: number,
   elbowAngle: number,
   wristAngle: number,
+  gripperRotateAngle: number,
   clawAngle: number,
   offsetX: number
 ): ArmKeyPoints {
@@ -68,6 +69,10 @@ function computeArmKeyPoints(
   const perpX = new THREE.Vector3(1, 0, 0).cross(wristDir).normalize();
   if (perpX.length() < 0.01) perpX.set(1, 0, 0);
   perpX.normalize();
+
+  // Apply gripper rotation around the wrist axis
+  const gripperRad = ((gripperRotateAngle - 90) / 180) * Math.PI;
+  perpX.applyAxisAngle(wristDir, gripperRad);
 
   const prong1 = clawBase.clone().add(wristDir.clone().multiplyScalar(0.4)).add(perpX.clone().multiplyScalar(clawOpen));
   const prong2 = clawBase.clone().add(wristDir.clone().multiplyScalar(0.4)).add(perpX.clone().multiplyScalar(-clawOpen));
@@ -258,9 +263,10 @@ function ArmParticles({ pins, color, positions }: {
   const shoulderAngle = positions[pins[1]] ?? 80;
   const elbowAngle = positions[pins[2]] ?? 80;
   const wristAngle = positions[pins[3]] ?? 90;
+  const gripperRotateAngle = positions[pins[4]] ?? 90;
   const clawAngle = positions[pins[5]] ?? 80;
 
-  const keyPoints = computeArmKeyPoints(baseAngle, shoulderAngle, elbowAngle, wristAngle, clawAngle, offsetX);
+  const keyPoints = computeArmKeyPoints(baseAngle, shoulderAngle, elbowAngle, wristAngle, gripperRotateAngle, clawAngle, offsetX);
 
   const particleCount = 120;
 
