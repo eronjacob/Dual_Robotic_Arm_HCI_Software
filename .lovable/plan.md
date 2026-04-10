@@ -1,39 +1,20 @@
 
 
-# Visual Effects Enhancement Plan
+# Fix Gripper Rotate Slider in 3D Visualization
 
-## Overview
-Add polished visual effects across the 3D visualization, hand gesture control, and servo sliders to make the interface feel more dynamic and professional.
+## Problem
+The Gripper Rotate servo (`pins[4]` / pin 4 or 14) is completely ignored in the 3D visualization. The `ArmParticles` component reads `pins[0-3]` and `pins[5]` but skips `pins[4]`. The `computeArmKeyPoints` function has no parameter for gripper rotation.
 
-## Changes
+## What the Gripper Rotate does
+On the real arm, Gripper Rotate (pin 4/14) rotates the claw assembly around the forearm axis — like twisting your wrist. It should rotate the claw prongs around the `wristDir` axis.
 
-### 1. 3D Particle Visualization (`ParticleArm3D.tsx`)
-- **Glowing energy lines** between arm segments using `THREE.Line` with gradient opacity — connects the particles visually so the arm reads as a structure, not scattered dots
-- **Pulsing joint orbs** at each joint (base, elbow, wrist) — small spheres that pulse with a glow effect
-- **Floating ambient particles** — 50-80 tiny particles drifting slowly around the scene for atmosphere (like dust motes)
-- **Dynamic particle size** — particles near joints are slightly larger, creating visual weight at articulation points
-- **Subtle auto-rotation** when idle — the scene slowly rotates if the user hasn't interacted with OrbitControls recently
+## Fix (single file: `src/components/ParticleArm3D.tsx`)
 
-### 2. Servo Sliders (`ServoSlider.tsx` + `slider.tsx`)
-- **Colored slider tracks** — the filled range actually renders in blue (left arm) or orange (right arm) instead of the current broken dynamic class
-- **Glow effect on active slider** — when dragging, the thumb and track get a colored box-shadow/glow
-- **Animated value display** — the degree number uses a subtle scale animation when changing
-- **Moving indicator pulse** — when `isMoving` is true, add a pulsing glow border animation instead of just a color change
+1. **Read `pins[4]`** in `ArmParticles`: add `const gripperRotateAngle = positions[pins[4]] ?? 90;`
 
-### 3. Hand Gesture Control (`HandGestureControl.tsx`)
-- **Pulsing "LIVE" indicator** — the green LIVE badge gets a breathing pulse animation
-- **Glowing camera border** — when camera is active, the video container gets an animated gradient border (blue/orange)
-- **Hand detection status with animated icons** — replace emoji checkmarks with animated dot indicators
+2. **Add `gripperRotateAngle` parameter** to `computeArmKeyPoints` signature
 
-### 4. Global Animations (`tailwind.config.ts` + `index.css`)
-- Add keyframes for `pulse-glow`, `border-glow`, and `breathe` animations
-- Add utility classes for the glow effects
+3. **Apply rotation to claw prongs**: After computing `clawBase`, rotate the perpendicular vector (`perpX`) around `wristDir` by the gripper rotate angle. This will twist the two prong positions around the arm's end axis, visually showing the claw rotating when the slider moves.
 
-## Files to modify
-- `src/components/ParticleArm3D.tsx` — energy lines, joint orbs, ambient particles
-- `src/components/ServoSlider.tsx` — colored tracks, glow effects, pulse animation
-- `src/components/ui/slider.tsx` — support arm-color prop for track coloring
-- `src/components/HandGestureControl.tsx` — animated LIVE badge, glowing border
-- `tailwind.config.ts` — new keyframes and animations
-- `src/index.css` — glow utility classes
+4. The rotation math: use an angle derived from `(gripperRotateAngle - 90)`, apply it as a rotation of the `perpX` vector around `wristDir` using Rodrigues' rotation formula or `THREE.Vector3.applyAxisAngle`.
 
