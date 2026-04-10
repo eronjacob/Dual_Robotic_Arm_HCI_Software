@@ -24,6 +24,7 @@ function computeArmKeyPoints(
   shoulderAngle: number,
   elbowAngle: number,
   wristAngle: number,
+  gripperRotateAngle: number,
   clawAngle: number,
   offsetX: number
 ): ArmKeyPoints {
