@@ -2,6 +2,7 @@ import { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
+import { Activity, Bot, Hand, ScanLine } from 'lucide-react';
 import type { HandLandmarks } from '@/hooks/useHandTracking';
 
 interface ParticleArmProps {
@@ -70,7 +71,6 @@ function computeArmKeyPoints(
   if (perpX.length() < 0.01) perpX.set(1, 0, 0);
   perpX.normalize();
 
-  // Apply gripper rotation around the wrist axis
   const gripperRad = ((gripperRotateAngle - 90) / 180) * Math.PI;
   perpX.applyAxisAngle(wristDir, gripperRad);
 
@@ -95,7 +95,6 @@ function armSegmentPoints(keyPoints: ArmKeyPoints): THREE.Vector3[] {
   addSeg(elbowPos, wristPos, 10);
   addSeg(wristPos, clawBase, 5);
 
-  // Base platform particles
   for (let i = 0; i < 12; i++) {
     const angle = (i / 12) * Math.PI * 2;
     const r = 0.4 + Math.random() * 0.2;
@@ -106,8 +105,7 @@ function armSegmentPoints(keyPoints: ArmKeyPoints): THREE.Vector3[] {
     ));
   }
 
-  // Joint scatter
-  [baseTop, elbowPos, wristPos].forEach(joint => {
+  [baseTop, elbowPos, wristPos].forEach((joint) => {
     for (let i = 0; i < 4; i++) {
       points.push(joint.clone().add(
         new THREE.Vector3(
@@ -125,11 +123,8 @@ function armSegmentPoints(keyPoints: ArmKeyPoints): THREE.Vector3[] {
   return points;
 }
 
-/* ── Energy Lines ── */
 function EnergyLines({ keyPoints, color }: { keyPoints: ArmKeyPoints; color: string }) {
-  const lineRef = useRef<THREE.Line>(null);
   const timeRef = useRef(0);
-
   const geometry = useMemo(() => new THREE.BufferGeometry(), []);
   const material = useMemo(() => new THREE.LineBasicMaterial({
     color,
@@ -138,28 +133,23 @@ function EnergyLines({ keyPoints, color }: { keyPoints: ArmKeyPoints; color: str
     blending: THREE.AdditiveBlending,
     linewidth: 1,
   }), [color]);
+  const line = useMemo(() => new THREE.Line(geometry, material), [geometry, material]);
 
   useFrame((_, delta) => {
     timeRef.current += delta;
     const { baseTop, elbowPos, wristPos, clawBase, prong1, prong2 } = keyPoints;
-    const segments = [baseTop, elbowPos, wristPos, clawBase];
-    
-    // Create smooth curve through key points
-    const curve = new THREE.CatmullRomCurve3(segments);
+    const curve = new THREE.CatmullRomCurve3([baseTop, elbowPos, wristPos, clawBase]);
     const curvePoints = curve.getPoints(40);
-    
-    // Add prong lines
     const allPoints = [...curvePoints, clawBase.clone(), prong1.clone(), clawBase.clone(), prong2.clone()];
     geometry.setFromPoints(allPoints);
   });
 
-  return <primitive object={new THREE.Line(geometry, material)} />;
+  return <primitive object={line} />;
 }
 
-/* ── Pulsing Joint Orbs ── */
 function JointOrbs({ keyPoints, color }: { keyPoints: ArmKeyPoints; color: string }) {
   const joints = [keyPoints.baseTop, keyPoints.elbowPos, keyPoints.wristPos, keyPoints.clawBase];
-  
+
   return (
     <>
       {joints.map((pos, i) => (
@@ -197,7 +187,6 @@ function PulsingOrb({ position, color, delay }: { position: THREE.Vector3; color
   );
 }
 
-/* ── Floating Ambient Particles ── */
 function AmbientParticles() {
   const pointsRef = useRef<THREE.Points>(null);
   const count = 60;
@@ -224,7 +213,6 @@ function AmbientParticles() {
       posArr[i * 3 + 1] += speeds[i] * delta * 0.3;
       posArr[i * 3] += Math.sin(timeRef.current * 0.5 + i) * delta * 0.05;
       posArr[i * 3 + 2] += Math.cos(timeRef.current * 0.3 + i) * delta * 0.05;
-      // Reset if too high
       if (posArr[i * 3 + 1] > 7) {
         posArr[i * 3 + 1] = -0.5;
         posArr[i * 3] = (Math.random() - 0.5) * 10;
@@ -237,7 +225,7 @@ function AmbientParticles() {
   return (
     <points ref={pointsRef} geometry={geometry}>
       <pointsMaterial
-        color="#4488aa"
+        color="hsl(210 65% 55%)"
         size={0.04}
         transparent
         opacity={0.35}
@@ -249,7 +237,6 @@ function AmbientParticles() {
   );
 }
 
-/* ── Arm Particles (enhanced with dynamic sizing) ── */
 function ArmParticles({ pins, color, positions }: {
   pins: number[];
   color: string;
@@ -267,22 +254,18 @@ function ArmParticles({ pins, color, positions }: {
   const clawAngle = positions[pins[5]] ?? 80;
 
   const keyPoints = computeArmKeyPoints(baseAngle, shoulderAngle, elbowAngle, wristAngle, gripperRotateAngle, clawAngle, offsetX);
-
   const particleCount = 120;
 
-  const { geometry, sizes } = useMemo(() => {
+  const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(particleCount * 3);
-    const sz = new Float32Array(particleCount);
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(sz, 1));
-    return { geometry: geo, sizes: sz };
+    return geo;
   }, []);
 
   useFrame((_, delta) => {
     timeRef.current += delta;
     const pts = armSegmentPoints(keyPoints);
-
     const posArr = geometry.attributes.position.array as Float32Array;
     for (let i = 0; i < particleCount; i++) {
       const pt = pts[i % pts.length];
@@ -313,13 +296,12 @@ function ArmParticles({ pins, color, positions }: {
   );
 }
 
-/* ── Hand Particles ── */
 function HandParticles({ landmarks, side }: {
   landmarks: { x: number; y: number; z: number }[] | null;
   side: 'left' | 'right';
 }) {
   const pointsRef = useRef<THREE.Points>(null);
-  const color = side === 'left' ? '#60a5fa' : '#fb923c';
+  const color = side === 'left' ? 'hsl(210 100% 65%)' : 'hsl(25 95% 60%)';
   const offsetX = side === 'left' ? -2 : 2;
 
   const geometry = useMemo(() => {
@@ -359,14 +341,10 @@ function HandParticles({ landmarks, side }: {
   );
 }
 
-/* ── Grid ── */
 function FloatingGrid() {
-  return (
-    <gridHelper args={[12, 24, '#1e293b', '#0f172a']} position={[0, -0.1, 0]} />
-  );
+  return <gridHelper args={[12, 24, 'hsl(220 15% 22%)', 'hsl(220 20% 10%)']} position={[0, -0.1, 0]} />;
 }
 
-/* ── Auto-rotating controls ── */
 function AutoRotateControls() {
   const controlsRef = useRef<any>(null);
   const idleTimeRef = useRef(0);
@@ -389,33 +367,64 @@ function AutoRotateControls() {
       minDistance={4}
       maxDistance={15}
       target={[0, 3, 0]}
-      onStart={() => { setIsIdle(false); idleTimeRef.current = 0; }}
+      onStart={() => {
+        setIsIdle(false);
+        idleTimeRef.current = 0;
+      }}
       onEnd={() => setIsIdle(true)}
     />
   );
 }
 
-/* ── Main Component ── */
 export const ParticleArm3D = ({ positions, landmarks }: ParticleArmProps) => {
+  const detectedHands = Number(Boolean(landmarks.left)) + Number(Boolean(landmarks.right));
+
   return (
-    <div className="w-full h-[400px] rounded-lg overflow-hidden border border-border/30 bg-black/50">
-      <Canvas
-        camera={{ position: [6, 5, 6], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
-      >
-        <ambientLight intensity={0.2} />
-        <pointLight position={[5, 10, 5]} intensity={0.5} />
+    <section className="hero-panel overflow-hidden p-4 md:p-5">
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="section-kicker">Simulation viewport</div>
+          <h2 className="mt-1 text-2xl font-semibold text-foreground">Particle twin-arm render</h2>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <span className="status-pill">
+            <Bot className="h-3.5 w-3.5 text-arm-left" /> Mirrored 6-DOF
+          </span>
+          <span className="status-pill">
+            <Hand className="h-3.5 w-3.5 text-arm-right" /> {detectedHands} hand{detectedHands === 1 ? '' : 's'} tracked
+          </span>
+          <span className="status-pill">
+            <ScanLine className="h-3.5 w-3.5 text-accent" /> Auto orbit idle mode
+          </span>
+        </div>
+      </div>
 
-        <ArmParticles pins={[0, 1, 2, 3, 4, 5]} color="#3b82f6" positions={positions} />
-        <ArmParticles pins={[10, 11, 12, 13, 14, 15]} color="#f97316" positions={positions} />
+      <div className="relative overflow-hidden rounded-lg border border-border/70 bg-background/60">
+        <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.18),transparent_42%),radial-gradient(circle_at_bottom_right,hsl(var(--accent)/0.16),transparent_35%)]" />
+        <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(to_bottom,hsl(var(--background)/0.12),hsl(var(--background)/0.65))]" />
+        <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-2">
+          <span className="status-pill">
+            <Activity className="h-3.5 w-3.5 text-success" /> Live particles
+          </span>
+          <span className="status-pill">Orbit to inspect wrist, elbow, and claw articulation</span>
+        </div>
+        <div className="h-[420px] w-full md:h-[520px]">
+          <Canvas camera={{ position: [6, 5, 6], fov: 50 }} gl={{ antialias: true, alpha: true }}>
+            <ambientLight intensity={0.2} />
+            <pointLight position={[5, 10, 5]} intensity={0.5} />
 
-        <HandParticles landmarks={landmarks.left as any} side="left" />
-        <HandParticles landmarks={landmarks.right as any} side="right" />
+            <ArmParticles pins={[0, 1, 2, 3, 4, 5]} color="hsl(210 100% 60%)" positions={positions} />
+            <ArmParticles pins={[10, 11, 12, 13, 14, 15]} color="hsl(25 95% 58%)" positions={positions} />
 
-        <AmbientParticles />
-        <FloatingGrid />
-        <AutoRotateControls />
-      </Canvas>
-    </div>
+            <HandParticles landmarks={landmarks.left as any} side="left" />
+            <HandParticles landmarks={landmarks.right as any} side="right" />
+
+            <AmbientParticles />
+            <FloatingGrid />
+            <AutoRotateControls />
+          </Canvas>
+        </div>
+      </div>
+    </section>
   );
 };
