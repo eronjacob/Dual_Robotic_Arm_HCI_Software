@@ -129,7 +129,7 @@ function EnergyLines({ keyPoints, color }: { keyPoints: ArmKeyPoints; color: str
   const material = useMemo(() => new THREE.LineBasicMaterial({
     color,
     transparent: true,
-    opacity: 0.5,
+    opacity: 0.8,
     blending: THREE.AdditiveBlending,
     linewidth: 1,
   }), [color]);
@@ -282,9 +282,9 @@ function ArmParticles({ pins, color, positions }: {
       <points ref={pointsRef} geometry={geometry}>
         <pointsMaterial
           color={color}
-          size={0.1}
+          size={0.14}
           transparent
-          opacity={0.85}
+          opacity={1}
           sizeAttenuation
           blending={THREE.AdditiveBlending}
           depthWrite={false}
@@ -400,8 +400,7 @@ export const ParticleArm3D = ({ positions, landmarks }: ParticleArmProps) => {
       </div>
 
       <div className="relative overflow-hidden rounded-lg border border-border/70 bg-background/60">
-        <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.18),transparent_42%),radial-gradient(circle_at_bottom_right,hsl(var(--accent)/0.16),transparent_35%)]" />
-        <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(to_bottom,hsl(var(--background)/0.12),hsl(var(--background)/0.65))]" />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.06),transparent_42%),radial-gradient(circle_at_bottom_right,hsl(var(--accent)/0.05),transparent_35%)]" />
         <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-2">
           <span className="status-pill">
             <Activity className="h-3.5 w-3.5 text-success" /> Live particles
@@ -413,8 +412,8 @@ export const ParticleArm3D = ({ positions, landmarks }: ParticleArmProps) => {
             <ambientLight intensity={0.2} />
             <pointLight position={[5, 10, 5]} intensity={0.5} />
 
-            <ArmParticles pins={[0, 1, 2, 3, 4, 5]} color="hsl(210 100% 60%)" positions={positions} />
-            <ArmParticles pins={[10, 11, 12, 13, 14, 15]} color="hsl(25 95% 58%)" positions={positions} />
+            <ArmParticles pins={[0, 1, 2, 3, 4, 5]} color="hsl(210 100% 65%)" positions={positions} />
+            <ArmParticles pins={[10, 11, 12, 13, 14, 15]} color="hsl(25 100% 62%)" positions={positions} />
 
             <HandParticles landmarks={landmarks.left as any} side="left" />
             <HandParticles landmarks={landmarks.right as any} side="right" />
