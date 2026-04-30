@@ -56,10 +56,10 @@ void setup() {
   pwm.setPWMFreq(50); // 50Hz for servos
   
   // Set all servos to home
-  int homeAngles[] = {90,80,80,90,90,80, 0,0,0,0,0,0, 0,0,0,0};
+  int homeAngles[] = {85,88,85,90,89,80, 0,0,0,0,0,0, 0,0,0,0};
   // Pins 0-5 (left arm) and 10-15 (right arm)
   int pins[] = {0,1,2,3,4,5,10,11,12,13,14,15};
-  int homes[] = {90,80,80,90,90,80,90,80,80,90,90,80};
+  int homes[] = {85,88,85,90,89,80,93,90,92,100,101,80};
   for (int i = 0; i < 12; i++) {
     setServoAngle(pins[i], homes[i]);
     delay(200); // Sequential startup
