@@ -15,20 +15,20 @@ export interface ArmConfig {
 }
 
 const rightArmServos: ServoConfig[] = [
-  { pin: 10, name: 'Base', home: 93, min: 0, max: 140, description: '0=left, 140=right' },
-  { pin: 11, name: 'Shoulder', home: 90, min: 0, max: 155, description: '0=back, 155=forward', pickUpAngle: 117 },
-  { pin: 12, name: 'Elbow', home: 92, min: 0, max: 150, description: '0=forward, 150=backward', pickUpAngle: 20 },
-  { pin: 13, name: 'Wrist', home: 100, min: 0, max: 160, description: '0=left, 180=right' },
-  { pin: 14, name: 'Gripper Rotate', home: 101, min: 30, max: 150, description: '0=backward, 150=forward', pickUpAngle: 30 },
+  { pin: 10, name: 'Base', home: 90, min: 0, max: 140, description: '0=left, 140=right' },
+  { pin: 11, name: 'Shoulder', home: 80, min: 0, max: 155, description: '0=back, 155=forward', pickUpAngle: 117 },
+  { pin: 12, name: 'Elbow', home: 80, min: 0, max: 150, description: '0=forward, 150=backward', pickUpAngle: 20 },
+  { pin: 13, name: 'Wrist', home: 90, min: 0, max: 160, description: '0=left, 180=right' },
+  { pin: 14, name: 'Gripper Rotate', home: 90, min: 30, max: 150, description: '0=backward, 150=forward', pickUpAngle: 30 },
   { pin: 15, name: 'Claw', home: 80, min: 0, max: 80, description: '0=close, 80=open' },
 ];
 
 const leftArmServos: ServoConfig[] = [
-  { pin: 0, name: 'Base', home: 85, min: 0, max: 140, description: '0=left, 140=right' },
-  { pin: 1, name: 'Shoulder', home: 88, min: 0, max: 155, description: '0=back, 155=forward', pickUpAngle: 117 },
-  { pin: 2, name: 'Elbow', home: 85, min: 0, max: 150, description: '0=forward, 150=backward', pickUpAngle: 20 },
+  { pin: 0, name: 'Base', home: 90, min: 0, max: 140, description: '0=left, 140=right' },
+  { pin: 1, name: 'Shoulder', home: 80, min: 0, max: 155, description: '0=back, 155=forward', pickUpAngle: 117 },
+  { pin: 2, name: 'Elbow', home: 80, min: 0, max: 150, description: '0=forward, 150=backward', pickUpAngle: 20 },
   { pin: 3, name: 'Wrist', home: 90, min: 0, max: 160, description: '0=left, 180=right' },
-  { pin: 4, name: 'Gripper Rotate', home: 89, min: 30, max: 150, description: '0=backward, 150=forward', pickUpAngle: 30 },
+  { pin: 4, name: 'Gripper Rotate', home: 90, min: 30, max: 150, description: '0=backward, 150=forward', pickUpAngle: 30 },
   { pin: 5, name: 'Claw', home: 80, min: 0, max: 80, description: '0=close, 80=open' },
 ];
 

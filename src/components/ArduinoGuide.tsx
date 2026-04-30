@@ -1,6 +1,6 @@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronDown, Code, Cpu } from 'lucide-react';
+import { ChevronDown, Code } from 'lucide-react';
 
 const arduinoCode = `#include <WiFiS3.h>
 #include <WebSocketsServer.h>
@@ -56,10 +56,10 @@ void setup() {
   pwm.setPWMFreq(50); // 50Hz for servos
   
   // Set all servos to home
-  int homeAngles[] = {85,88,85,90,89,80, 0,0,0,0,0,0, 0,0,0,0};
+  int homeAngles[] = {90,80,80,90,90,80, 0,0,0,0,0,0, 0,0,0,0};
   // Pins 0-5 (left arm) and 10-15 (right arm)
   int pins[] = {0,1,2,3,4,5,10,11,12,13,14,15};
-  int homes[] = {85,88,85,90,89,80,93,90,92,100,101,80};
+  int homes[] = {90,80,80,90,90,80,90,80,80,90,90,80};
   for (int i = 0; i < 12; i++) {
     setServoAngle(pins[i], homes[i]);
     delay(200); // Sequential startup
@@ -77,38 +77,39 @@ void loop() {
 
 export const ArduinoGuide = () => {
   return (
-    <Card className="panel-shell border-border/60 bg-card/55">
+    <Card>
       <Collapsible>
-        <CardHeader className="pb-2">
-          <CollapsibleTrigger className="flex w-full items-center justify-between gap-3 text-left">
-            <div>
-              <div className="section-kicker">Deployment support</div>
-              <CardTitle className="mt-1 flex items-center gap-2 text-lg">
-                <Code className="h-5 w-5 text-primary" /> Arduino firmware guide
-              </CardTitle>
-            </div>
+        <CardHeader className="pb-3">
+          <CollapsibleTrigger className="flex w-full items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Code className="h-5 w-5" /> Arduino Firmware Guide
+            </CardTitle>
             <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [&[data-state=open]]:rotate-180" />
           </CollapsibleTrigger>
         </CardHeader>
         <CollapsibleContent>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
-              <div className="rounded-lg border border-border/70 bg-background/35 p-4 text-sm text-muted-foreground">
-                <div className="mb-3 flex items-center gap-2 text-foreground">
-                  <Cpu className="h-4 w-4 text-accent" />
-                  Setup checklist
-                </div>
-                <ul className="space-y-2 text-xs leading-5">
-                  <li>Install WiFiS3, WebSockets, Adafruit PWM Servo Driver, and Arduino_JSON.</li>
-                  <li>Paste the sketch, then update your Wi-Fi SSID and password.</li>
-                  <li>Upload to the Arduino UNO R4 WiFi and inspect Serial Monitor for the IP.</li>
-                  <li>Use that IP in the controller connection bar above.</li>
-                </ul>
-              </div>
-              <pre className="max-h-96 overflow-auto rounded-lg border border-border/70 bg-background/55 p-4 text-xs leading-relaxed text-muted-foreground">
-                {arduinoCode}
-              </pre>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p><strong className="text-foreground">Required Libraries</strong> (install via Arduino IDE Library Manager):</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li><code>WiFiS3</code> — built-in for UNO R4 WiFi</li>
+                <li><code>WebSockets</code> by Markus Sattler</li>
+                <li><code>Adafruit PWM Servo Driver Library</code></li>
+                <li><code>Arduino_JSON</code></li>
+              </ul>
+              <p><strong className="text-foreground">Steps:</strong></p>
+              <ol className="list-decimal pl-5 space-y-1">
+                <li>Install libraries above in Arduino IDE</li>
+                <li>Copy the code below into a new sketch</li>
+                <li>Update WiFi SSID and password</li>
+                <li>Upload to Arduino UNO R4 WiFi</li>
+                <li>Open Serial Monitor to find the IP address</li>
+                <li>Enter that IP in the connection bar above</li>
+              </ol>
             </div>
+            <pre className="max-h-96 overflow-auto rounded-md bg-secondary p-4 text-xs font-mono leading-relaxed">
+              {arduinoCode}
+            </pre>
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

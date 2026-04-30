@@ -14,7 +14,6 @@ interface ServoSliderProps {
 
 export const ServoSlider = ({ servo, value, onChange, isMoving, armColor }: ServoSliderProps) => {
   const colorClass = armColor === 'left' ? 'text-arm-left' : 'text-arm-right';
-  const toneClass = armColor === 'left' ? 'border-arm-left/20 bg-arm-left/5' : 'border-arm-right/20 bg-arm-right/5';
   const [animateValue, setAnimateValue] = useState(false);
   const [prevValue, setPrevValue] = useState(value);
 
@@ -30,33 +29,28 @@ export const ServoSlider = ({ servo, value, onChange, isMoving, armColor }: Serv
   const glowClass = armColor === 'left' ? 'glow-left' : 'glow-right';
 
   return (
-    <div
-      className={`rounded-lg border px-3 py-3 transition-all duration-300 ${toneClass} ${
-        isMoving ? `border-warning animate-pulse-glow ${glowClass}` : 'border-border/70'
-      }`}
-    >
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-            <span>Pin {servo.pin}</span>
-            <span className={`h-1 w-1 rounded-full ${armColor === 'left' ? 'bg-arm-left' : 'bg-arm-right'}`} />
-            <span>{servo.min}–{servo.max}</span>
-          </div>
-          <div className={`truncate text-sm font-semibold ${colorClass}`}>{servo.name}</div>
+    <div className={`rounded-md border p-3 transition-all duration-300 ${
+      isMoving
+        ? `border-warning animate-pulse-glow ${glowClass}`
+        : 'border-border'
+    }`}>
+      <div className="mb-2 flex items-center justify-between">
+        <div>
+          <span className={`text-sm font-semibold ${colorClass}`}>
+            Pin {servo.pin}: {servo.name}
+          </span>
           <p className="text-xs text-muted-foreground">{servo.description}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span
-            className={`min-w-[56px] rounded-md border border-border/70 bg-background/60 px-2 py-1 text-right font-mono text-lg font-bold text-foreground transition-transform ${
-              animateValue ? 'animate-value-pop' : ''
-            }`}
-          >
+          <span className={`min-w-[3ch] text-right font-mono text-lg font-bold text-foreground transition-transform ${
+            animateValue ? 'animate-value-pop' : ''
+          }`}>
             {value}°
           </span>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 border border-border/70 bg-background/40"
+            className="h-7 w-7"
             onClick={() => onChange(servo.pin, servo.home)}
             title="Home"
           >
@@ -65,7 +59,7 @@ export const ServoSlider = ({ servo, value, onChange, isMoving, armColor }: Serv
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <span className="w-8 text-xs text-muted-foreground">{servo.min}°</span>
+        <span className="text-xs text-muted-foreground w-8">{servo.min}°</span>
         <Slider
           value={[value]}
           min={servo.min}
@@ -75,7 +69,7 @@ export const ServoSlider = ({ servo, value, onChange, isMoving, armColor }: Serv
           armColor={armColor}
           className="flex-1"
         />
-        <span className="w-8 text-right text-xs text-muted-foreground">{servo.max}°</span>
+        <span className="text-xs text-muted-foreground w-8 text-right">{servo.max}°</span>
       </div>
     </div>
   );
