@@ -28,9 +28,18 @@ function computeArmKeyPoints(
   clawAngle: number,
   offsetX: number
 ): ArmKeyPoints {
-  const baseRad = ((baseAngle - 90) / 180) * Math.PI;
-  const shoulderTilt = ((shoulderAngle - 80) / 155) * Math.PI * 0.8;
-  const elbowTilt = ((elbowAngle - 80) / 150) * Math.PI * 0.7;
+  // Per-arm "vertical" reference angles (match physical robot home positions).
+  // Left arm uses pin 0 base; right arm uses pin 10 base.
+  const isLeft = offsetX < 0;
+  const baseRef = isLeft ? 85 : 93;
+  const shoulderRef = isLeft ? 88 : 90;
+  const elbowRef = isLeft ? 85 : 92;
+  const wristRef = isLeft ? 90 : 100;
+  const gripperRef = isLeft ? 89 : 101;
+
+  const baseRad = ((baseAngle - baseRef) / 180) * Math.PI;
+  const shoulderTilt = ((shoulderAngle - shoulderRef) / 155) * Math.PI * 0.8;
+  const elbowTilt = ((elbowAngle - elbowRef) / 150) * Math.PI * 0.7;
 
   const origin = new THREE.Vector3(offsetX, 0, 0);
   const baseTop = origin.clone().add(new THREE.Vector3(0, 0.6, 0));
