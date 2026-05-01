@@ -63,7 +63,7 @@ function computeArmKeyPoints(
   const foreLen = 1.6;
   const wristPos = elbowPos.clone().add(elbowDir.clone().multiplyScalar(foreLen));
 
-  const wristTilt = ((wristAngle - 90) / 180) * Math.PI * 0.3;
+  const wristTilt = ((wristAngle - wristRef) / 180) * Math.PI * 0.3;
   const wristCumulTilt = cumulativeTilt + wristTilt;
   const wristDir = new THREE.Vector3(
     Math.sin(baseRad) * Math.sin(wristCumulTilt),
