@@ -80,7 +80,7 @@ function computeArmKeyPoints(
   perpX.normalize();
 
   // Apply gripper rotation around the wrist axis
-  const gripperRad = ((gripperRotateAngle - 90) / 180) * Math.PI;
+  const gripperRad = ((gripperRotateAngle - gripperRef) / 180) * Math.PI;
   perpX.applyAxisAngle(wristDir, gripperRad);
 
   const prong1 = clawBase.clone().add(wristDir.clone().multiplyScalar(0.4)).add(perpX.clone().multiplyScalar(clawOpen));
