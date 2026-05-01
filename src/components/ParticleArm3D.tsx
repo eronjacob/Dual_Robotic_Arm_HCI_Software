@@ -28,9 +28,18 @@ function computeArmKeyPoints(
   clawAngle: number,
   offsetX: number
 ): ArmKeyPoints {
-  const baseRad = ((baseAngle - 90) / 180) * Math.PI;
-  const shoulderTilt = ((shoulderAngle - 80) / 155) * Math.PI * 0.8;
-  const elbowTilt = ((elbowAngle - 80) / 150) * Math.PI * 0.7;
+  // Per-arm "vertical" reference angles (match physical robot home positions).
+  // Left arm uses pin 0 base; right arm uses pin 10 base.
+  const isLeft = offsetX < 0;
+  const baseRef = isLeft ? 85 : 93;
+  const shoulderRef = isLeft ? 88 : 90;
+  const elbowRef = isLeft ? 85 : 92;
+  const wristRef = isLeft ? 90 : 100;
+  const gripperRef = isLeft ? 89 : 101;
+
+  const baseRad = ((baseAngle - baseRef) / 180) * Math.PI;
+  const shoulderTilt = ((shoulderAngle - shoulderRef) / 155) * Math.PI * 0.8;
+  const elbowTilt = ((elbowAngle - elbowRef) / 150) * Math.PI * 0.7;
 
   const origin = new THREE.Vector3(offsetX, 0, 0);
   const baseTop = origin.clone().add(new THREE.Vector3(0, 0.6, 0));
@@ -54,7 +63,7 @@ function computeArmKeyPoints(
   const foreLen = 1.6;
   const wristPos = elbowPos.clone().add(elbowDir.clone().multiplyScalar(foreLen));
 
-  const wristTilt = ((wristAngle - 90) / 180) * Math.PI * 0.3;
+  const wristTilt = ((wristAngle - wristRef) / 180) * Math.PI * 0.3;
   const wristCumulTilt = cumulativeTilt + wristTilt;
   const wristDir = new THREE.Vector3(
     Math.sin(baseRad) * Math.sin(wristCumulTilt),
@@ -71,7 +80,7 @@ function computeArmKeyPoints(
   perpX.normalize();
 
   // Apply gripper rotation around the wrist axis
-  const gripperRad = ((gripperRotateAngle - 90) / 180) * Math.PI;
+  const gripperRad = ((gripperRotateAngle - gripperRef) / 180) * Math.PI;
   perpX.applyAxisAngle(wristDir, gripperRad);
 
   const prong1 = clawBase.clone().add(wristDir.clone().multiplyScalar(0.4)).add(perpX.clone().multiplyScalar(clawOpen));
